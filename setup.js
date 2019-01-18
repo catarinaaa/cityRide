@@ -95,12 +95,13 @@ function createGround() {
 	
 	// Materials
 	ground_material = Physijs.createMaterial(
-		new THREE.MeshLambertMaterial({ map: loader.load( 'images/grass.png' ) }),
+		new THREE.MeshLambertMaterial({ map: loader.load( 'images/ground2.jpg' ) }),
 		.8, // high friction
 		.4 // low restitution
 	);
-	ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
-	ground_material.map.repeat.set( 20, 20 );
+
+	ground_material.map.wrapS = ground_material.map.wrapT = THREE.MirroredRepeatWrapping;
+	ground_material.map.repeat.set( 2, 2 );
 	
 	box_material = Physijs.createMaterial(
 		new THREE.MeshLambertMaterial({ map: loader.load( 'images/plywood.jpg' ) }),

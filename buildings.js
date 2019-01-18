@@ -44,7 +44,7 @@ function populateCity() {
 
 
 function createBuilding(x, y, z, size_x, size_y, size_z, n_material) {
-	var build = new Physijs.BoxMesh(new THREE.BoxGeometry(size_x, size_y, size_z), new THREE.MeshFaceMaterial(building_materials[n_material]));
+	var build = new Physijs.BoxMesh(new THREE.BoxGeometry(size_x, size_y, size_z), new THREE.MeshFaceMaterial(building_materials[n_material]), 0);
 		build.castShadow = build.receiveShadow = true;
 		build.position.set(x, size_y/2, z);
 		scene.add( build )
