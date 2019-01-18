@@ -8,8 +8,17 @@ var initScene, render, ground_material, box_material,
 	renderer, render_stats, physics_stats, scene, ground,
 	vehicle_body, vehicle, loader, skyBox;
 var backwards = false;
+
+/*   Light variables   */
 var light, headlight, sunlight;
+
+/*   Camera variables   */
 var camera, camera1, camera2, camera3;
+var box;
+
+var buildings = [];
+var building_materials = []
+
 
 function createLight() {
 	sunlight = new THREE.DirectionalLight( 0xFFFFFF, 0.1);
@@ -29,37 +38,32 @@ function createLight() {
 */
 	light = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
 	scene.add( light );
-	headlight = new THREE.SpotLight(0xffffff, 2, 25, Math.PI/6, 0.3, 0.7);
-	scene.add(headlight);
+
+	/*headlight = new THREE.SpotLight(0xffffff, 2, 25, Math.PI/6, 0.3, 0.7) ;
+	headlight.position.set(1, 0, 0)
+	scene.add( headlight );*/
 }
 
 function createCamera() {
-	camera1 = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1,	1000);
-	camera2 = new THREE.OrthographicCamera(window.innerWidth/-2, window.innerWidth/2 , window.innerHeight/2, window.innerHeight/-2 , 1, 1000);
-	camera2.position.set( 0, 50, 0 );
+	/* camera1 - perspective view */
+	camera1 = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
+	/* camera2 - top view */
+	camera2 = new THREE.OrthographicCamera(window.innerWidth/-6, window.innerWidth/6 , window.innerHeight/6, window.innerHeight/-6 , 1, 1000);
+	camera2.position.set( 0, 200, 0 );
 	camera2.lookAt(scene.position);
+	/* camera3 - back view */
+	camera3 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+
+	// assign camera
 	camera = camera1;
 	scene.add( camera );
 	
 }
 
-function createBuilding(x, y, z) {
-	var box_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({ map: loader.load( 'images/building1.jpg' ) }),
-			.4, // low friction
-			.6 // high restitution
-		);
-	box_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
-	box_material.map.repeat.set( .25, .25 );
-
-	var box = new Physijs.BoxMesh(new THREE.BoxGeometry(30, 30, 30), box_material);
-		box.castShadow = box.receiveShadow = true;
-		box.position.set(x, 15, z);
-		scene.add( box )
-
-}
 
 function createWall() {
+	loader = new THREE.TextureLoader();
+
 	var wall_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ map: loader.load( 'images/brick_dark.jpg' ) }),
 			.4, // low friction
@@ -96,7 +100,7 @@ function createGround() {
 		.4 // low restitution
 	);
 	ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
-	ground_material.map.repeat.set( 3, 3 );
+	ground_material.map.repeat.set( 20, 20 );
 	
 	box_material = Physijs.createMaterial(
 		new THREE.MeshLambertMaterial({ map: loader.load( 'images/plywood.jpg' ) }),
@@ -146,29 +150,6 @@ function createGround() {
 */
 }
 
-function createSkybox() {
-	/* doesnt work because of physijs */
-	var imagePrefix = "tex/";
-	//var directions  = 
-	var imageSuffix = ".jpg";
-		
-	
-	var materialArray = [];
-	for (var i = 0; i < 6; i++)
-		materialArray.push( new THREE.MeshBasicMaterial({
-			map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
-			side: THREE.BackSide
-		}));
-	
-	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-	
-	//skyBox = new THREE.Mesh( skyBoxGeometry, skyMaterial );
-	skyBox = new Physijs.BoxMesh(skyBoxGeometry, skyMaterial, 0);
-	scene.add(skyBox);
-
-}
-
 function onKeyDown(ev) {
 	switch ( ev.keyCode ) {
 		case 49: // 1
@@ -184,28 +165,6 @@ function onKeyDown(ev) {
 			break;
 	}
 }
-/*
-function onKeyUp(ev) {
-	switch ( ev.keyCode ) {
-		case 37: // left
-			input.direction = null;
-			break;
-
-		case 38: // forward
-			input.power = null;
-			break;
-
-		case 39: // right
-			input.direction = null;
-			break;
-
-		case 40: // back
-			input.power = null;
-			break;
-	}
-}
-*/
-
 
 
 initScene = function() {
@@ -213,15 +172,7 @@ initScene = function() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMapSoft = true;
-/*
-	var loader = new THREE.CubeTextureLoader();
-	var textureCube = loader.load( [
-		'tex/posx.jpg', 'tex/negx.jpg',
-		'tex/posy.jpg', 'tex/negy.jpg',
-		'tex/posz.jpg', 'tex/negz.jpg'
-	] );
-	renderer.setTextureCube(textureCube,0);*/
-	//renderer.setTexture(new THREE.TextureLoader().load( "images/sky.jpg" ));
+
 	renderer.setClearColor( 0x7EC0EE );
 	document.getElementById( 'viewport' ).appendChild( renderer.domElement );
 	
@@ -282,7 +233,7 @@ initScene = function() {
 	// Loader
 	createGround();
 
-	createBuilding(-50, 0, -50);
+	populateCity();
 	createWall();
 	
 	var json_loader = new THREE.JSONLoader();
@@ -383,14 +334,25 @@ initScene = function() {
 render = function() {
 	requestAnimationFrame( render );
 	if ( vehicle ) {
-		camera.position.copy( vehicle.mesh.position ).add( new THREE.Vector3( 40, 25, 40 ) );
-		camera.lookAt( vehicle.mesh.position );
-    	headlight.position.set(vehicle.mesh.position.x+5, vehicle.mesh.position.y, vehicle.mesh.position.z);
-    	headlight.target.position.set(vehicle.mesh.position.x+10, vehicle.mesh.position.y, vehicle.mesh.position.z);
-    	scene.add(headlight.target);
-    	headlight.rotation.set(vehicle.mesh.rotation.x, vehicle.mesh.rotation.y, vehicle.mesh.rotation.z);
+		camera1.position.copy( vehicle.mesh.position ).add( new THREE.Vector3( 40, 25, 40 ) );
+		camera1.lookAt( vehicle.mesh.position );
+		//camera3.position.copy( vehicle.mesh.position).add(new THREE.Vector3( 0, 5, -20));
+		//var cameraOffset = vehicle.mesh.localToWorld(new THREE.Vector3(0,5,-20));
+		var cameraOffset = (new THREE.Vector3(0,5,-20)).applyMatrix4(vehicle.mesh.matrixWorld);
+   		camera3.position.copy (cameraOffset);
+		//camera3.applyQuaternion(new THREE.Quaternion(vehicle.mesh.position.x, vehicle.mesh.position.y, vehicle.mesh.position.z, 1));
+
+		camera3.lookAt(vehicle.mesh.position);
+    	//headlight.position.set(vehicle.mesh.position.x+5, vehicle.mesh.position.y, vehicle.mesh.position.z);
+    	//headlight.target.position.set(vehicle.mesh.position.x+10, vehicle.mesh.position.y, vehicle.mesh.position.z);
+    	//headlight.setLinearVelocity(vehicle.mesh._physijs.linearVelocity)
+    	//headlight.setAngularVelocity(vehicle.mesh._physijs.angularVelocity)
+    	//headlight.target.rotation.set(vehicle.mesh.rotation.x, vehicle.mesh.rotation.y, vehicle.mesh.rotation.z);
+		//scene.add(headlight.target);
 		//light.target.position.copy( vehicle.mesh.position );
 		//light.position.addVectors( light.target.position, new THREE.Vector3( 20, 20, -15 ) );
+
+		//headlight.target.updateMatrixWorld();
 	}
 	renderer.render( scene, camera );
 	render_stats.update();

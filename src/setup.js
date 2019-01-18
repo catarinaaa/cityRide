@@ -96,7 +96,7 @@ function createGround() {
 		.4 // low restitution
 	);
 	ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
-	ground_material.map.repeat.set( 3, 3 );
+	ground_material.map.repeat.set( 10, 10 );
 	
 	box_material = Physijs.createMaterial(
 		new THREE.MeshLambertMaterial({ map: loader.load( 'images/plywood.jpg' ) }),
