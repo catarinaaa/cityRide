@@ -4,24 +4,24 @@
 Physijs.scripts.worker = 'js/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 	
-var initScene, render, ground_material, box_material, 
+var initScene, render, ground_material, streetlights_material, 
 	renderer, render_stats, physics_stats, scene, ground,
 	vehicle_body, vehicle, loader, skyBox;
 var backwards = false, turn_wheels = false;
 
 /*   Light variables   */
-var light, headlight, sunlight, hemilight;
+var light, headlight1, headlight2, sunlight, hemilight, lightHelper, lightCandle;
 
 /*   Camera variables   */
 var camera, camera1, camera2, camera3;
-var box;
+var box, obj;
 
 var buildings = [];
 var building_materials = [];
 
 
 function createLight() {
-	light = new THREE.DirectionalLight( 0xFFFFFF);
+	light = new THREE.DirectionalLight( 0xFFFFFF, 1);
 	light.position.set(20, 80, 20);
 	light.target.position.copy( scene.position );
 	light.castShadow = true;
@@ -35,7 +35,7 @@ function createLight() {
 	light.shadowMapWidth = light.shadowMapHeight = 2048;
 	light.shadowDarkness = .5;
 
-	hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.7 );
+	hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.7);
 	scene.add( hemilight );
 
 
@@ -43,10 +43,48 @@ function createLight() {
 	scene.add(light);
 	//sunlight = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
 	//scene.add( sunlight );
+	obj = new THREE.Object3D();
+	obj.position.set(0,0,3);
+	obj.matrixAutoUpdate = true;
+	headlight1 =  new THREE.SpotLight(0xffffff, 4, 25, Math.PI/6, 0.3, 1);
+	headlight2 = new THREE.SpotLight(0xffffff, 1);
+	headlight1.position.set(1.6, 1, 5.3);
+	headlight2.position.set(-1.6, 0, 3.3);
+	//headlight1.target.position.set(1.6, 1, -10);
+	headlight1.target = obj;
+	headlight2.target.position.set(-1.6, 0, 5.3);
+	headlight1.castShadow = true;
+	scene.add( headlight1 );
+	scene.add( headlight2 );
+	scene.add(obj);
 
-	/*headlight = new THREE.SpotLight(0xffffff, 2, 25, Math.PI/6, 0.3, 0.7) ;
-	headlight.position.set(1, 0, 0)
-	scene.add( headlight );*/
+	headlight1.shadow.mapSize.width = 1024;
+	headlight1.shadow.mapSize.height = 1024;
+
+	headlight1.shadow.camera.near = 500;
+	headlight1.shadow.camera.far = 4000;
+	headlight1.shadow.camera.fov = 30;
+
+	lightHelper = new THREE.SpotLightHelper( headlight1 );
+	scene.add( lightHelper );
+}
+
+function createCandle(x, y, z) {
+   	var streetlights_material = Physijs.createMaterial(
+			new THREE.MeshLambertMaterial({ map: loader.load( 'images/metal.jpg' ) }),
+			.4, // low friction
+			.6 // high restitution
+		);
+   var geometry = new THREE.CylinderGeometry(0.5, 0.5, y, 32);
+   var mesh = new Physijs.CylinderMesh(geometry, streetlights_material, 1000);
+   mesh.receiveShadow = true;
+   mesh.position.set(x, y/2, z);
+   scene.add(mesh)
+
+   lightCandle = new THREE.PointLight(0xffcc99, 1, y+y, 1);
+	lightCandle.position.set(x, y+1, z);
+	//lightCandle.castShadow = true;
+	scene.add(lightCandle);
 }
 
 function createCamera() {
@@ -107,14 +145,6 @@ function createGround() {
 
 	ground_material.map.wrapS = ground_material.map.wrapT = THREE.MirroredRepeatWrapping;
 	ground_material.map.repeat.set( 2, 2 );
-	
-	box_material = Physijs.createMaterial(
-		new THREE.MeshLambertMaterial({ map: loader.load( 'images/plywood.jpg' ) }),
-		.4, // low friction
-		.6 // high restitution
-	);
-	box_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
-	box_material.map.repeat.set( .25, .25 );
 
 	// Ground
 	var NoiseGen = new SimplexNoise;
@@ -229,6 +259,12 @@ initScene = function() {
 
 	populateCity();
 	createWall();
+
+	createCandle(-30, 20, -30);
+	createCandle(30, 20, -30);
+	createCandle(-30, 20, 30);
+	createCandle(30, 20, 30);
+
 	
 	var json_loader = new THREE.JSONLoader();
 
@@ -339,10 +375,17 @@ render = function() {
 		//camera3.position.copy( vehicle.mesh.position).add(new THREE.Vector3( 0, 5, -20));
 		//var cameraOffset = vehicle.mesh.localToWorld(new THREE.Vector3(0,5,-20));
 		var cameraOffset = (new THREE.Vector3(0,5,-20)).applyMatrix4(vehicle.mesh.matrixWorld);
-   		camera3.position.copy (cameraOffset);
+   		camera3.position.copy(cameraOffset);
 		//camera3.applyQuaternion(new THREE.Quaternion(vehicle.mesh.position.x, vehicle.mesh.position.y, vehicle.mesh.position.z, 1));
 
 		camera3.lookAt(vehicle.mesh.position);
+		var lightsOffset = (new THREE.Vector3(1.6,1,-10)).applyMatrix4(vehicle.mesh.matrixWorld);
+
+   		//headlight1.position.copy(lightsOffset);
+   		headlight2.position.copy(lightsOffset);
+		//headlight1.target.position.set(lightsOffset.x,lightsOffset.y, lightsOffset.z);
+		headlight2.target.position.set(lightsOffset.x, lightsOffset.y, lightsOffset.z);
+
     	//headlight.position.set(vehicle.mesh.position.x+5, vehicle.mesh.position.y, vehicle.mesh.position.z);
     	//headlight.target.position.set(vehicle.mesh.position.x+10, vehicle.mesh.position.y, vehicle.mesh.position.z);
     	//headlight.setLinearVelocity(vehicle.mesh._physijs.linearVelocity)
@@ -352,7 +395,12 @@ render = function() {
 		//light.target.position.copy( vehicle.mesh.position );
 		//light.position.addVectors( light.target.position, new THREE.Vector3( 20, 20, -15 ) );
 
-		//headlight.target.updateMatrixWorld();
+		headlight1.target.updateMatrixWorld();
+		//scene.add( headlight1.target );
+
+
+		headlight2.target.updateMatrixWorld();
+
 	}
 	renderer.render( scene, camera );
 	render_stats.update();
