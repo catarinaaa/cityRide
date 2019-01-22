@@ -4,7 +4,7 @@
 Physijs.scripts.worker = 'js/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 	
-var initScene, render, ground_material, streetlights_material, 
+var initScene, render, ground_material, streetlights_material, wall1_material,
 	renderer, render_stats, physics_stats, scene, ground,
 	vehicle_body, vehicle, loader, skyBox;
 var backwards = false, turn_wheels = false;
@@ -34,15 +34,12 @@ function createLight() {
 	light.shadowBias = -.0001
 	light.shadowMapWidth = light.shadowMapHeight = 2048;
 	light.shadowDarkness = .5;
-
+	scene.add(light);
+	
 	hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.7);
 	scene.add( hemilight );
 
-
-
-	scene.add(light);
-	//sunlight = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
-	//scene.add( sunlight );
+/*
 	obj = new THREE.Object3D();
 	obj.position.set(0,0,3);
 	obj.matrixAutoUpdate = true;
@@ -67,6 +64,7 @@ function createLight() {
 
 	lightHelper = new THREE.SpotLightHelper( headlight1 );
 	scene.add( lightHelper );
+	*/
 }
 
 function createCandle(x, y, z) {
@@ -389,12 +387,12 @@ render = function() {
    		camera4.position.copy(camera4Offset);
 		camera4.lookAt((new THREE.Vector3(0,3,10)).applyMatrix4(vehicle.mesh.matrixWorld));
 		
-		var lightsOffset = (new THREE.Vector3(1.6,1,-10)).applyMatrix4(vehicle.mesh.matrixWorld);
+		//var lightsOffset = (new THREE.Vector3(1.6,1,-10)).applyMatrix4(vehicle.mesh.matrixWorld);
 
    		//headlight1.position.copy(lightsOffset);
-   		headlight2.position.copy(lightsOffset);
+   		//headlight2.position.copy(lightsOffset);
 		//headlight1.target.position.set(lightsOffset.x,lightsOffset.y, lightsOffset.z);
-		headlight2.target.position.set(lightsOffset.x, lightsOffset.y, lightsOffset.z);
+		//headlight2.target.position.set(lightsOffset.x, lightsOffset.y, lightsOffset.z);
 
     	//headlight.position.set(vehicle.mesh.position.x+5, vehicle.mesh.position.y, vehicle.mesh.position.z);
     	//headlight.target.position.set(vehicle.mesh.position.x+10, vehicle.mesh.position.y, vehicle.mesh.position.z);
@@ -404,12 +402,9 @@ render = function() {
 		//scene.add(headlight.target);
 		//light.target.position.copy( vehicle.mesh.position );
 		//light.position.addVectors( light.target.position, new THREE.Vector3( 20, 20, -15 ) );
-
-		headlight1.target.updateMatrixWorld();
+		//headlight1.target.updateMatrixWorld();
 		//scene.add( headlight1.target );
-
-
-		headlight2.target.updateMatrixWorld();
+		//headlight2.target.updateMatrixWorld();
 
 	}
 	renderer.render( scene, camera );

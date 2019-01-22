@@ -5,11 +5,11 @@
 function fillMaterials() {
 	var files = ['images/shop1_side.jpg', 'images/building1_side.jpg', 'images/building2_side.jpg','images/building3_side.jpg',
 	'images/building4_side.jpg','images/building5_side.jpg', 'images/building6_side.jpg', 'images/shop7_side.jpg', 
-	'images/building8_side.jpg', 'images/building9_side.jpg'];
+	'images/building8_side.jpg', 'images/building9_side.jpg', 'images/blue_roof.jpg', 'images/blue_roof_bump.jpg'];
 	var material = [];
 	loader = new THREE.TextureLoader();
 
-	for (var i = 0; i < files.length; i++) {
+	for (var i = 0; i < files.length-2; i++) {
 		material = [
 	       Physijs.createMaterial(new THREE.MeshLambertMaterial({
 	           map: loader.load(files[i])
@@ -17,8 +17,8 @@ function fillMaterials() {
 	       Physijs.createMaterial(new THREE.MeshLambertMaterial({
 	           map: loader.load(files[i])
 	       }), .4, .6),
-	       Physijs.createMaterial(new THREE.MeshLambertMaterial({
-	           map: loader.load(files[i])
+	       Physijs.createMaterial(new THREE.MeshPhongMaterial({
+	           map: loader.load(files[10]), bumpMap: loader.load(files[11])
 	       }), .4, .6),
 	       Physijs.createMaterial(new THREE.MeshLambertMaterial({
 	           map: loader.load(files[i])
@@ -36,7 +36,9 @@ function fillMaterials() {
 
 
 function populateCity() {
+	
 	fillMaterials();
+
 	//Building 1
 	createBuilding(-113, 0, -113, 38, 38, 38, 1);
 	createBuilding(113, 0, 113, 38, 38, 38, 1);
@@ -82,21 +84,34 @@ function populateCity() {
 	createBuilding(0, 0, -113, 38, 25, 38, 8);
 	createBuilding(-56.2, 0, 56, 38, 30, 38, 8);
 
-
-	//Building 9
-	//createBuilding(0, 0, 56, 76, 35, 37, 9);
-
-
-	var wall_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({ map: loader.load( 'images/brick_dark.jpg' ) }),
+	var wall1_material = Physijs.createMaterial(
+			new THREE.MeshLambertMaterial({ map: loader.load( 'images/graffiti.jpg' ) }),
 			.4, // low friction
 			.6 // high restitution
 		);
-	wall_material.map.wrapS = ground_material.map.wrapT = THREE.MirroredRepeatWrapping;
-	var wall4 = new Physijs.BoxMesh(new THREE.BoxGeometry(75, 10, 1), wall_material, 0);
+	wall1_material.map.wrapS = wall1_material.map.wrapT = THREE.MirroredRepeatWrapping;
+	wall1_material.map.repeat.set(9, 1);
+
+	var wall2_material = Physijs.createMaterial(
+			new THREE.MeshLambertMaterial({ map: loader.load( 'images/graffiti.jpg' ) }),
+			.4, // low friction
+			.6 // high restitution
+		);
+	wall1_material.map.wrapS = wall1_material.map.wrapT = THREE.MirroredRepeatWrapping;
+	wall1_material.map.repeat.set(4, 1);
+
+	var wall4 = new Physijs.BoxMesh(new THREE.BoxGeometry(75, 10, 1), wall1_material, 0);
 		wall4.castShadow = wall4.receiveShadow = true;
 		wall4.position.set(0, 5, 74.5);
 		scene.add(wall4);
+	var wall1 = new Physijs.BoxMesh(new THREE.BoxGeometry(25, 10, 1), wall2_material, 0);
+		wall1.castShadow = wall1.receiveShadow = true;
+		wall1.position.set(-25, 5, 37.5);
+		scene.add(wall1);
+	var wall2 = new Physijs.BoxMesh(new THREE.BoxGeometry(25, 10, 1), wall2_material, 0);
+		wall2.castShadow = wall2.receiveShadow = true;
+		wall2.position.set(25, 5, 37.5);
+		scene.add(wall2);
 
 } 
 
