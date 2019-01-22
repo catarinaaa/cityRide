@@ -22,9 +22,13 @@ var building_materials = []
 
 function createLight() {
 	light = new THREE.DirectionalLight( 0xFFFFFF);
-	light.position.set(0, 100, 0);
+	light.position.set(20, 80, 20);
 	light.target.position.copy( scene.position );
 	light.castShadow = true;
+
+
+var hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.4 );
+scene.add( hemilight );
 
 	light.shadowCameraLeft = -150;
 	light.shadowCameraTop = -150;
@@ -97,7 +101,7 @@ function createGround() {
 	// Materials
 	ground_material = Physijs.createMaterial(
 		new THREE.MeshLambertMaterial({ map: loader.load( 'images/ground2.jpg' ) }),
-		.8, // high friction
+		.3, // low friction
 		.4 // low restitution
 	);
 
@@ -125,7 +129,7 @@ function createGround() {
 
 	// If your plane is not square as far as face count then the HeightfieldMesh
 	// takes two more arguments at the end: # of x faces and # of z faces that were passed to THREE.PlaneMaterial
-	ground = new Physijs.HeightfieldMesh(
+	ground = new Physijs.PlaneMesh(
 			ground_geometry,
 			ground_material,
 			0 // mass

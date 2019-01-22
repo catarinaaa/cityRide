@@ -96,7 +96,7 @@ function populateCity() {
 	var wall4 = new Physijs.BoxMesh(new THREE.BoxGeometry(76, 10, 1), wall_material, 0);
 		wall4.castShadow = wall4.receiveShadow = true;
 		wall4.position.set(0, 5, 74.5);
-		scene.add( wall4);
+		scene.add(wall4);
 
 } 
 
