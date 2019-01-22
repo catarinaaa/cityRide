@@ -7,17 +7,17 @@ Physijs.scripts.ammo = 'ammo.js';
 var initScene, render, ground_material, box_material, 
 	renderer, render_stats, physics_stats, scene, ground,
 	vehicle_body, vehicle, loader, skyBox;
-var backwards = false;
+var backwards = false, turn_wheels = false;
 
 /*   Light variables   */
-var light, headlight, sunlight;
+var light, headlight, sunlight, hemilight;
 
 /*   Camera variables   */
 var camera, camera1, camera2, camera3;
 var box;
 
 var buildings = [];
-var building_materials = []
+var building_materials = [];
 
 
 function createLight() {
@@ -25,11 +25,6 @@ function createLight() {
 	light.position.set(20, 80, 20);
 	light.target.position.copy( scene.position );
 	light.castShadow = true;
-
-
-var hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.4 );
-scene.add( hemilight );
-
 	light.shadowCameraLeft = -150;
 	light.shadowCameraTop = -150;
 	light.shadowCameraRight = 150;
@@ -38,7 +33,12 @@ scene.add( hemilight );
 	light.shadowCameraFar = 400;
 	light.shadowBias = -.0001
 	light.shadowMapWidth = light.shadowMapHeight = 2048;
-	light.shadowDarkness = .7;
+	light.shadowDarkness = .5;
+
+	hemilight = new THREE.HemisphereLight( 0x7EC0EE, 0xffffff, 0.7 );
+	scene.add( hemilight );
+
+
 
 	scene.add(light);
 	//sunlight = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
@@ -101,8 +101,8 @@ function createGround() {
 	// Materials
 	ground_material = Physijs.createMaterial(
 		new THREE.MeshLambertMaterial({ map: loader.load( 'images/ground2.jpg' ) }),
-		.3, // low friction
-		.4 // low restitution
+		0,//.3, // low friction
+		0//.4 // low restitution
 	);
 
 	ground_material.map.wrapS = ground_material.map.wrapT = THREE.MirroredRepeatWrapping;
@@ -138,22 +138,6 @@ function createGround() {
 	ground.receiveShadow = true;
 	scene.add( ground );
 
-/* for boxes
-	for ( i = 0; i < 50; i++ ) {
-		var size = Math.random() * 2 + .5;
-		var box = new Physijs.BoxMesh(
-			new THREE.BoxGeometry( size, size, size ),
-			box_material
-		);
-		box.castShadow = box.receiveShadow = true;
-		box.position.set(
-			Math.random() * 25 - 50,
-			5,
-			Math.random() * 25 - 50
-		);
-		scene.add( box )
-	}
-*/
 }
 
 function onKeyDown(ev) {
@@ -168,6 +152,10 @@ function onKeyDown(ev) {
 
 		case 51: // 3
 			camera = camera3;
+			break;
+
+		case 77: // M
+			turn_wheels = !turn_wheels;
 			break;
 	}
 }
@@ -204,6 +192,9 @@ initScene = function() {
 				if ( input.steering < -.6 ) input.steering = -.6;
 				if ( input.steering > .6 ) input.steering = .6;
 			}
+			else {
+				if (!turn_wheels) input.steering = 0;
+			}
 			vehicle.setSteering( input.steering, 0 );
 			vehicle.setSteering( input.steering, 1 );
 
@@ -213,8 +204,8 @@ initScene = function() {
 				else
 					vehicle.applyEngineForce( -300 );
 			} else if ( input.power === false ) {
-				vehicle.setBrake( 20, 2 );
-				vehicle.setBrake( 20, 3 );
+				vehicle.setBrake( 25, 2 );
+				vehicle.setBrake( 25, 3 );
 			} else {
 				vehicle.applyEngineForce( 0 );
 			}
@@ -225,9 +216,6 @@ initScene = function() {
 	}
 	);
 	
-
-
-
 	//Camera
 	createCamera();
 
@@ -254,11 +242,11 @@ initScene = function() {
 			mesh.castShadow = mesh.receiveShadow = true;
 
 			vehicle = new Physijs.Vehicle(mesh, new Physijs.VehicleTuning(
-				10.88,
+				5,//10.88,
 				1.83,
-				0.28,
+				0,//0.28,
 				500,
-				10.5,
+				5, //10.5,
 				6000
 			));
 			scene.add( vehicle );
@@ -277,9 +265,9 @@ initScene = function() {
 					),
 					new THREE.Vector3( 0, -1, 0 ),
 					new THREE.Vector3( -1, 0, 0 ),
-					0.5,
-					0.7,
-					i < 2 ? false : true
+					0.1, //tuning
+					0.7, //wheel radius
+					i < 2 ? false : true //is front wheel
 				);
 			}
 
@@ -295,6 +283,7 @@ initScene = function() {
 							break;
 
 						case 38: // forward
+							backwards = false;
 							input.power = true;
 							break;
 
@@ -302,12 +291,13 @@ initScene = function() {
 							input.direction = -1;
 							break;
 
-						case 40: // back
+						case 66: // brake
 							input.power = false;
 							break;
 
-						case 66:
-							backwards = !backwards;
+						case 40: // back
+							backwards = true;
+							input.power = true;
 							break;
 					}
 				});
@@ -323,6 +313,10 @@ initScene = function() {
 
 						case 39: // right
 							input.direction = null;
+							break;
+
+						case 66: // brake
+							input.power = null;
 							break;
 
 						case 40: // back
