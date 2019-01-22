@@ -21,12 +21,12 @@ var building_materials = []
 
 
 function createLight() {
-	sunlight = new THREE.DirectionalLight( 0xFFFFFF, 0.1);
-	sunlight.position.set(0, 100, 0);
-	sunlight.target.position.copy( scene.position );
-	sunlight.castShadow = true;
-	scene.add(sunlight);
-/*	light.shadowCameraLeft = -150;
+	light = new THREE.DirectionalLight( 0xFFFFFF);
+	light.position.set(0, 100, 0);
+	light.target.position.copy( scene.position );
+	light.castShadow = true;
+
+	light.shadowCameraLeft = -150;
 	light.shadowCameraTop = -150;
 	light.shadowCameraRight = 150;
 	light.shadowCameraBottom = 150;
@@ -35,9 +35,10 @@ function createLight() {
 	light.shadowBias = -.0001
 	light.shadowMapWidth = light.shadowMapHeight = 2048;
 	light.shadowDarkness = .7;
-*/
-	light = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
-	scene.add( light );
+
+	scene.add(light);
+	//sunlight = new THREE.AmbientLight( 0xFFFFFF, 0.1); // soft white light
+	//scene.add( sunlight );
 
 	/*headlight = new THREE.SpotLight(0xffffff, 2, 25, Math.PI/6, 0.3, 0.7) ;
 	headlight.position.set(1, 0, 0)
