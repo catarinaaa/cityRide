@@ -13,7 +13,7 @@ var backwards = false, turn_wheels = false;
 var light, headlight1, headlight2, sunlight, hemilight, lightHelper, lightCandle;
 
 /*   Camera variables   */
-var camera, camera1, camera2, camera3;
+var camera, camera1, camera2, camera3, camera4;
 var box, obj;
 
 var buildings = [];
@@ -96,6 +96,9 @@ function createCamera() {
 	camera2.lookAt(scene.position);
 	/* camera3 - back view */
 	camera3 = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+
+	/* camera4 - first person view*/
+	camera4 = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 1000);
 
 	// assign camera
 	camera = camera1;
@@ -182,6 +185,10 @@ function onKeyDown(ev) {
 
 		case 51: // 3
 			camera = camera3;
+			break;
+
+		case 52:
+			camera = camera4;
 			break;
 
 		case 77: // M
@@ -374,11 +381,14 @@ render = function() {
 		camera1.lookAt( vehicle.mesh.position );
 		//camera3.position.copy( vehicle.mesh.position).add(new THREE.Vector3( 0, 5, -20));
 		//var cameraOffset = vehicle.mesh.localToWorld(new THREE.Vector3(0,5,-20));
-		var cameraOffset = (new THREE.Vector3(0,5,-20)).applyMatrix4(vehicle.mesh.matrixWorld);
-   		camera3.position.copy(cameraOffset);
-		//camera3.applyQuaternion(new THREE.Quaternion(vehicle.mesh.position.x, vehicle.mesh.position.y, vehicle.mesh.position.z, 1));
-
+		var camera3Offset = (new THREE.Vector3(0,5,-20)).applyMatrix4(vehicle.mesh.matrixWorld);
+   		camera3.position.copy(camera3Offset);
 		camera3.lookAt(vehicle.mesh.position);
+
+		var camera4Offset = (new THREE.Vector3(0,3,5)).applyMatrix4(vehicle.mesh.matrixWorld);
+   		camera4.position.copy(camera4Offset);
+		camera4.lookAt((new THREE.Vector3(0,3,10)).applyMatrix4(vehicle.mesh.matrixWorld));
+		
 		var lightsOffset = (new THREE.Vector3(1.6,1,-10)).applyMatrix4(vehicle.mesh.matrixWorld);
 
    		//headlight1.position.copy(lightsOffset);
