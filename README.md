@@ -2,6 +2,8 @@
 
 In this project, you can drive a car in a city. You can also change between different cameras and driving modes. 
 
+Demo: https://web.ist.utl.pt/ist424743/cityRide/
+
 ### Instructions
 
 | Key | Action |
@@ -17,5 +19,7 @@ In this project, you can drive a car in a city. You can also change between diff
 
 ### Source
 The Physijs library can be found here: http://chandlerprall.github.io/Physijs/ 
+
 The following project was used as a base for the code as well as for the car model: http://chandlerprall.github.io/Physijs/examples/vehicle.html
+
 The textures for the buildings and walls were found at: https://www.sketchuptextureclub.com/textures/ 
